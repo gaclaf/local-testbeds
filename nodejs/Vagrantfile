@@ -1,0 +1,38 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+
+FORWARD_DOCKER_PORTS = "true"
+
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'docker'
+
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+ 
+ config.vm.box = "centos/7"
+
+
+ 
+ # Testing a fix for vagrant up issue: "Warning: Authentication failure. Retrying..."
+ config.ssh.insert_key = false
+ 
+ config.vm.network "private_network", ip: "192.168.8.100"
+
+ config.vm.define "nodejs_testbed" do |nodejs_testbed|
+
+ 	## Link "projects" folder with code for development inside vagrantbox.
+ 	# Make sure to install vbguest for folder sharing: vagrant plugin install vagrant-vbguest
+ 	config.vm.synced_folder "./projects", "/vagrant/projects"
+ 	
+	nodejs_testbed.vm.network "forwarded_port", guest: 22, host: 2223
+	# Expose nodejs ports
+ 	nodejs_testbed.vm.network "forwarded_port", guest: 3001, host: 3001
+
+        nodejs_testbed.vm.provision "shell", inline: "bash /vagrant/scripts/bootstrap.sh", run: "always"
+
+ end
+
+end
+
